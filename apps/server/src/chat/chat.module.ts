@@ -8,6 +8,9 @@ import { ChatGateway } from './chat.gateway';
 import { Message } from './entities/message.entity';
 import { MessageReaction } from './entities/message-reaction.entity';
 import { EncryptionService } from '../common/encryption.service';
+import { MediaStorageService } from './services/media-storage.service';
+import { ReactionService } from './services/reaction.service';
+import { MessageMapperService } from './services/message-mapper.service';
 
 @Module({
   imports: [
@@ -22,7 +25,14 @@ import { EncryptionService } from '../common/encryption.service';
     }),
   ],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway, EncryptionService],
+  providers: [
+    ChatService,
+    ChatGateway,
+    EncryptionService,
+    MediaStorageService,
+    ReactionService,
+    MessageMapperService,
+  ],
   exports: [ChatService],
 })
 export class ChatModule {}

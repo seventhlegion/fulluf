@@ -1,55 +1,64 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
 
 interface EmojiPickerProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSelect: (emoji: string) => void;
-  /** Ref to the container that wraps both trigger and picker - used for click-outside detection */
-  triggerRef?: React.RefObject<HTMLDivElement | null>;
+  trigger: React.ReactNode;
 }
 
 export function EmojiPicker({
-  isOpen,
-  onClose,
+  open,
+  onOpenChange,
   onSelect,
-  triggerRef,
+  trigger,
 }: EmojiPickerProps) {
-  const pickerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const isInsidePicker = pickerRef.current?.contains(target);
-      const isInsideTrigger = triggerRef?.current?.contains(target);
-      if (!isInsidePicker && !isInsideTrigger) {
-        onClose();
-      }
+    if (!open) return;
+    const handleScroll = () => onOpenChange(false);
+    const scrollParent = document.querySelector("[data-chat-scroll]");
+    scrollParent?.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      scrollParent?.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll, true);
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose, triggerRef]);
-
-  if (!isOpen) return null;
+  }, [open, onOpenChange]);
 
   return (
-    <div
-      ref={pickerRef}
-      className="absolute left-0 top-full z-20 mt-1 flex gap-1 rounded-lg border border-border bg-popover p-1 shadow-lg"
-    >
-      {QUICK_EMOJIS.map((emoji) => (
-        <button
-          key={emoji}
-          type="button"
-          className="rounded p-1 text-lg hover:bg-muted transition-colors"
-          onClick={() => onSelect(emoji)}
-        >
-          {emoji}
-        </button>
-      ))}
-    </div>
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        sideOffset={4}
+        className="w-auto p-1"
+      >
+        <div className="flex gap-1">
+          {QUICK_EMOJIS.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              className="rounded p-1 text-lg hover:bg-muted transition-colors"
+              onClick={() => {
+                onSelect(emoji);
+                onOpenChange(false);
+              }}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

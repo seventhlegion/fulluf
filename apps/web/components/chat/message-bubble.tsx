@@ -31,7 +31,6 @@ export function MessageBubble({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -104,10 +103,8 @@ export function MessageBubble({
         >
           <MessageHeader
             message={message}
-            emojiPickerRef={emojiPickerRef}
             showEmojiPicker={showEmojiPicker}
-            onToggleEmojiPicker={() => setShowEmojiPicker((v) => !v)}
-            onCloseEmojiPicker={() => setShowEmojiPicker(false)}
+            onEmojiPickerOpenChange={setShowEmojiPicker}
             onSelectEmoji={handleToggleReaction}
             onReply={onReply}
           />
@@ -150,20 +147,16 @@ function SwipeActionBackgrounds({ swipeOffset }: { swipeOffset: number }) {
 
 interface MessageHeaderProps {
   message: Message;
-  emojiPickerRef: React.RefObject<HTMLDivElement | null>;
   showEmojiPicker: boolean;
-  onToggleEmojiPicker: () => void;
-  onCloseEmojiPicker: () => void;
+  onEmojiPickerOpenChange: (open: boolean) => void;
   onSelectEmoji: (emoji: string) => void;
   onReply: () => void;
 }
 
 function MessageHeader({
   message,
-  emojiPickerRef,
   showEmojiPicker,
-  onToggleEmojiPicker,
-  onCloseEmojiPicker,
+  onEmojiPickerOpenChange,
   onSelectEmoji,
   onReply,
 }: MessageHeaderProps) {
@@ -175,23 +168,21 @@ function MessageHeader({
       <span className="text-xs text-muted-foreground/70">
         {new Date(message.createdAt).toLocaleTimeString()}
       </span>
-      <div className="relative" ref={emojiPickerRef}>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="opacity-0 transition-opacity group-hover:opacity-100"
-          onClick={onToggleEmojiPicker}
-          aria-label="Add reaction"
-        >
-          <SmilePlusIcon className="size-4" />
-        </Button>
-        <EmojiPicker
-          isOpen={showEmojiPicker}
-          onClose={onCloseEmojiPicker}
-          onSelect={onSelectEmoji}
-          triggerRef={emojiPickerRef}
-        />
-      </div>
+      <EmojiPicker
+        open={showEmojiPicker}
+        onOpenChange={onEmojiPickerOpenChange}
+        onSelect={onSelectEmoji}
+        trigger={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="opacity-0 transition-opacity group-hover:opacity-100"
+            aria-label="Add reaction"
+          >
+            <SmilePlusIcon className="size-4" />
+          </Button>
+        }
+      />
       <Button
         variant="ghost"
         size="icon-sm"

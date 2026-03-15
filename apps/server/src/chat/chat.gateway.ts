@@ -10,28 +10,20 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ChatService, MessageResponse, ReactionSummary } from './chat.service';
+import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import type { JwtPayload } from '../auth/auth.service';
-
-interface AuthenticatedSocket extends Socket {
-  user?: JwtPayload;
-}
-
-export interface MessagesRequestDto {
-  before?: string;
-  after?: string;
-  limit?: number;
-}
-
-export interface ReactionToggleDto {
-  messageId: string;
-  emoji: string;
-}
+import type { MessagesRequestDto } from './dto/messages-request.dto';
+import type { ReactionToggleDto } from './dto/reaction-toggle.dto';
+import type { MessageResponse } from './types';
+import type { JwtPayload } from '../auth/types';
 
 export interface ReactionUpdatedPayload {
   messageId: string;
   reactions: { emoji: string; count: number; senders: string[] }[];
+}
+
+interface AuthenticatedSocket extends Socket {
+  user?: JwtPayload;
 }
 
 @WebSocketGateway({
@@ -52,7 +44,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const token =
         client.handshake?.auth?.token ??
-        (client.handshake?.headers?.authorization as string)?.replace('Bearer ', '');
+        (client.handshake?.headers?.authorization as string)?.replace(
+          'Bearer ',
+          '',
+        );
       if (!token) {
         client.disconnect();
         return;
@@ -70,13 +65,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Optional: track online users
   }
 
-  /** Broadcast new message to all connected clients (used by gateway and controller) */
   broadcastNewMessage(msg: MessageResponse): void {
     this.server.emit('message:new', msg);
   }
 
-  /** Broadcast reaction update to all connected clients */
-  broadcastReactionUpdated(messageId: string, reactions: { emoji: string; count: number; senders: string[] }[]): void {
+  broadcastReactionUpdated(
+    messageId: string,
+    reactions: { emoji: string; count: number; senders: string[] }[],
+  ): void {
     this.server.emit('reaction:updated', { messageId, reactions });
   }
 
@@ -103,7 +99,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.user;
     if (!user) throw new Error('Unauthorized');
     if (dto.type !== 'text') {
-      throw new Error('Only text messages can be sent via WebSocket. Use REST for media.');
+      throw new Error(
+        'Only text messages can be sent via WebSocket. Use REST for media.',
+      );
     }
     const msg = await this.chat.create(user.username, {
       type: dto.type,
@@ -119,12 +117,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleReactionToggle(
     @MessageBody() dto: ReactionToggleDto,
     @ConnectedSocket() client: AuthenticatedSocket,
-  ): Promise<ReactionSummary[]> {
+  ) {
     const user = client.user;
     if (!user) throw new Error('Unauthorized');
-    const reactions = await this.chat.toggleReaction(dto.messageId, user.username, dto.emoji);
+    await this.chat.toggleReaction(dto.messageId, user.username, dto.emoji);
     const forBroadcast = await this.chat.getReactionsForBroadcast(dto.messageId);
     this.broadcastReactionUpdated(dto.messageId, forBroadcast);
-    return reactions;
+    return forBroadcast;
   }
 }

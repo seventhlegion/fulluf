@@ -6,6 +6,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import type { ConnectionStatus } from "@/lib/chat/connection-status";
 import { Button } from "@workspace/ui/components/button";
 import { LogOutIcon } from "lucide-react";
+import Image from "next/image";
 
 interface ChatHeaderProps {
   username: string;
@@ -19,14 +20,16 @@ export function ChatHeader({
   onLogout,
 }: ChatHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
       <div className="flex justify-center items-center gap-2">
-        <img
+        <Image
           src="/sheep.png"
-          alt=""
-          className="size-8 shrink-0 rounded-full object-contain"
+          alt="Fulluf"
+          width={32}
+          height={32}
+          className="shrink-0 rounded-full"
         />
-        <h1 className="text-lg font-semibold">FulluF</h1>
+        <h1 className="text-lg font-semibold">Fulluf</h1>
         <LiveStatus status={connectionStatus} />
       </div>
       <div className="flex items-center gap-2">

@@ -44,6 +44,7 @@ export function ChatMessageList({
   return (
     <div
       ref={messagesScrollRef}
+      data-chat-scroll
       className="scrollbar-elegant min-h-0 flex-1 overflow-y-auto p-4"
       onScroll={onScroll}
     >

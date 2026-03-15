@@ -12,10 +12,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { ChatService, CreateMessageDto, MessageResponse } from './chat.service';
+import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { JwtPayload } from '../auth/auth.service';
+import type { JwtPayload } from '../auth/types';
+import type { MessageResponse } from './types';
 
 const multerMem = memoryStorage();
 
@@ -59,7 +60,7 @@ export class ChatController {
       throw new BadRequestException('No file uploaded');
     }
     const type = (req.body?.type ?? 'image') as 'image' | 'video' | 'audio' | 'file';
-    const dto: CreateMessageDto = {
+    const dto = {
       type,
       content: '',
       mimeType: req.body?.mimeType ?? file.mimetype,

@@ -2,15 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { HashService } from '../common/hash.service';
-
-export interface JwtPayload {
-  sub: string; // hashed username (from IP)
-  username: string; // same hash for display
-}
-
-export interface RefreshPayload extends JwtPayload {
-  type: 'refresh';
-}
+import type { JwtPayload, RefreshPayload } from './types';
 
 @Injectable()
 export class AuthService {
@@ -76,3 +68,5 @@ export class AuthService {
     return payload;
   }
 }
+
+export type { JwtPayload, RefreshPayload } from './types';
