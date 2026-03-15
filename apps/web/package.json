@@ -12,8 +12,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dicebear/collection": "^9.4.0",
-    "@dicebear/core": "^9.4.0",
     "@tanstack/react-query": "^5.90.21",
     "@workspace/ui": "workspace:*",
     "jwt-decode": "^4.0.0",

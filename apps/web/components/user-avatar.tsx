@@ -1,13 +1,15 @@
 "use client";
 
-import { dylan } from "@dicebear/collection";
-import { createAvatar } from "@dicebear/core";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 import { useMemo } from "react";
+
+const AVATAR_API_URL =
+  process.env.NEXT_PUBLIC_AVATAR_API_URL || "https://api.dicebear.com";
+const AVATAR_STYLE = "dylan";
 
 interface UserAvatarProps {
   /** Hash/seed for deterministic avatar (e.g. senderHash) */
@@ -18,10 +20,8 @@ interface UserAvatarProps {
 
 export function UserAvatar({ seed, size = "lg", className }: UserAvatarProps) {
   const avatarSrc = useMemo(() => {
-    return createAvatar(dylan, {
-      seed,
-      size: 96,
-    }).toDataUri();
+    const params = new URLSearchParams({ seed });
+    return `${AVATAR_API_URL}/9.x/${AVATAR_STYLE}/svg?${params.toString()}`;
   }, [seed]);
 
   const fallback = useMemo(() => {

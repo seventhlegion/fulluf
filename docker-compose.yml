@@ -1,0 +1,53 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+        NEXT_PUBLIC_AVATAR_API_URL: http://localhost:3002
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_PATH=/app/apps/server/data/chat.db
+      - CHAT_ROOM_USERNAME=${CHAT_ROOM_USERNAME:-chat}
+      - CHAT_ROOM_PASSWORD=${CHAT_ROOM_PASSWORD:-room123}
+      - JWT_SECRET=${JWT_SECRET:-aa3ba2fd4cd8901bb621507cb0f42db2a0d2a41c51bcf81670ad66bd52088d3c}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-15m}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6}
+    volumes:
+      - server-data:/app/apps/server/data
+      - server-uploads:/app/apps/server/uploads
+    restart: unless-stopped
+
+  dicebear:
+    image: dicebear/api:3
+    restart: always
+    ports:
+      - "3002:3000"
+    tmpfs:
+      - /run
+      - /tmp
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+
+volumes:
+  server-data:
+  server-uploads:
